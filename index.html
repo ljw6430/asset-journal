@@ -44,6 +44,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-ghost:hover{background:var(--bg3);color:var(--text)}
 .btn-sm{padding:3px 9px;font-size:11px}
 .btn-danger{background:transparent;color:var(--accent2);border:1px solid var(--border)}.btn-danger:hover{background:rgba(255,101,132,.1)}
+.btn-edit{background:transparent;color:var(--accent);border:1px solid var(--border)}.btn-edit:hover{background:rgba(108,99,255,.1)}
 .form-row{display:grid;gap:10px;margin-bottom:10px}
 .form-row.c2{grid-template-columns:1fr 1fr}.form-row.c3{grid-template-columns:1fr 1fr 1fr}
 .form-group{display:flex;flex-direction:column;gap:4px}
@@ -91,11 +92,12 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 .prnum{font-size:18px;font-weight:700;color:var(--accent);font-family:var(--mono);min-width:24px}
 .prtext{font-size:12px;color:var(--text2);line-height:1.6;flex:1}
 .wcard{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
-.wcard-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.wcard-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .wstatus{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
-.sw{background:rgba(247,151,30,.15);color:var(--accent4)}
-.sb{background:rgba(67,233,123,.15);color:var(--accent3)}
-.ss{background:rgba(255,101,132,.15);color:var(--accent2)}
+.s-hold{background:rgba(108,99,255,.15);color:var(--accent)}
+.s-wait{background:rgba(247,151,30,.15);color:var(--accent4)}
+.s-buy{background:rgba(67,233,123,.15);color:var(--accent3)}
+.s-sell{background:rgba(255,101,132,.15);color:var(--accent2)}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;width:92%;max-width:520px;max-height:88vh;overflow-y:auto}
@@ -111,6 +113,7 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 .scat-cnt{font-size:10px;color:var(--accent);font-family:var(--mono)}
 .chk-item{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
 .chk-item:last-child{border-bottom:none}
+.action-btns{display:flex;gap:4px;flex-shrink:0}
 @media(max-width:600px){.dash-grid{grid-template-columns:1fr 1fr}.sgrid{grid-template-columns:1fr 1fr}.form-row.c3{grid-template-columns:1fr}}
 </style>
 </head>
@@ -213,10 +216,11 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 </div>
 </div>
 
-<!-- 모달들 -->
+<!-- 투자일지 모달 -->
 <div class="modal-overlay" id="jm">
 <div class="modal">
-  <div class="modal-header"><div class="modal-title">투자 일지 작성</div><button class="modal-close" id="close-jm">×</button></div>
+  <div class="modal-header"><div class="modal-title" id="jm-title">투자 일지 작성</div><button class="modal-close" id="close-jm">×</button></div>
+  <input type="hidden" id="j-edit-id">
   <div class="form-row c2">
     <div class="form-group"><label class="form-label">날짜</label><input type="date" class="form-input" id="jd"></div>
     <div class="form-group"><label class="form-label">구분</label><select class="form-input" id="jt"><option>매수</option><option>매도</option><option>관망</option><option>분석</option></select></div>
@@ -240,9 +244,11 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 </div>
 </div>
 
+<!-- 공부노트 모달 -->
 <div class="modal-overlay" id="sm">
 <div class="modal">
-  <div class="modal-header"><div class="modal-title">공부 노트 추가</div><button class="modal-close" id="close-sm">×</button></div>
+  <div class="modal-header"><div class="modal-title" id="sm-title">공부 노트 추가</div><button class="modal-close" id="close-sm">×</button></div>
+  <input type="hidden" id="s-edit-id">
   <div class="form-row c2">
     <div class="form-group"><label class="form-label">카테고리</label>
       <select class="form-input" id="sc">
@@ -262,9 +268,11 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 </div>
 </div>
 
+<!-- 포트폴리오 모달 -->
 <div class="modal-overlay" id="pm">
 <div class="modal">
-  <div class="modal-header"><div class="modal-title">자산 추가</div><button class="modal-close" id="close-pm">×</button></div>
+  <div class="modal-header"><div class="modal-title" id="pm-title">자산 추가</div><button class="modal-close" id="close-pm">×</button></div>
+  <input type="hidden" id="p-edit-id">
   <div class="form-row c2">
     <div class="form-group"><label class="form-label">자산명</label><input type="text" class="form-input" id="pn"></div>
     <div class="form-group"><label class="form-label">분류</label><select class="form-input" id="pc"><option>미국주식</option><option>국내주식</option><option>ETF</option><option>암호화폐</option><option>현금</option><option>부동산</option></select></div>
@@ -280,12 +288,18 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 </div>
 </div>
 
+<!-- 관찰종목 모달 -->
 <div class="modal-overlay" id="wm">
 <div class="modal">
-  <div class="modal-header"><div class="modal-title">관찰 종목 추가</div><button class="modal-close" id="close-wm">×</button></div>
+  <div class="modal-header"><div class="modal-title" id="wm-title">관찰 종목 추가</div><button class="modal-close" id="close-wm">×</button></div>
+  <input type="hidden" id="w-edit-id">
   <div class="form-row c2">
     <div class="form-group"><label class="form-label">종목명</label><input type="text" class="form-input" id="wn"></div>
-    <div class="form-group"><label class="form-label">상태</label><select class="form-input" id="ws"><<option>보유 중</option><option>이벤트 대기</option><option>매수 검토</option><option>매도 검토</option></select></div>
+    <div class="form-group"><label class="form-label">상태</label>
+      <select class="form-input" id="ws">
+        <option>보유 중</option><option>이벤트 대기</option><option>매수 검토</option><option>매도 검토</option>
+      </select>
+    </div>
   </div>
   <div class="form-group" style="margin-bottom:10px"><label class="form-label">이벤트 / 대기 조건</label><textarea class="form-input" id="we"></textarea></div>
   <div class="form-row c2">
@@ -299,6 +313,7 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 </div>
 </div>
 
+<!-- 목표 모달 -->
 <div class="modal-overlay" id="gm">
 <div class="modal">
   <div class="modal-header"><div class="modal-title">목표 수정</div><button class="modal-close" id="close-gm">×</button></div>
@@ -315,9 +330,11 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 </div>
 </div>
 
+<!-- 원칙 모달 -->
 <div class="modal-overlay" id="prm">
 <div class="modal">
-  <div class="modal-header"><div class="modal-title">투자 원칙 추가</div><button class="modal-close" id="close-prm">×</button></div>
+  <div class="modal-header"><div class="modal-title" id="prm-title">투자 원칙 추가</div><button class="modal-close" id="close-prm">×</button></div>
+  <input type="hidden" id="pr-edit-id">
   <div class="form-group" style="margin-bottom:14px"><label class="form-label">원칙</label><input type="text" class="form-input" id="prt"></div>
   <div style="display:flex;gap:8px;justify-content:flex-end">
     <button class="btn btn-ghost" id="cancel-prm">취소</button>
@@ -326,78 +343,59 @@ textarea.form-input{resize:vertical;min-height:75px;line-height:1.6}
 </div>
 </div>
 
-<!-- Firebase SDK (non-module) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
 <script>
-// ── Firebase 설정 ──
 const firebaseConfig = {
   apiKey: "AIzaSyBj59co3X5Uf0MbfrYfFx0LsJCffO-UCaQ",
   authDomain: "studyfile-d008b.firebaseapp.com",
   projectId: "studyfile-d008b",
   storageBucket: "studyfile-d008b.firebasestorage.app",
   messagingSenderId: "1081016279808",
-  appId: "1:1081016279808:web:d4f3e07ab8d22a3cafc9e5",
-  measurementId: "G-0LG9KNZPX7"
+  appId: "1:1081016279808:web:d4f3e07ab8d22a3cafc9e5"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+let DB = {journals:[],studies:[],portfolios:[],goals:[],principles:[],watchlist:[]};
 
-let DB = { journals:[], studies:[], portfolios:[], goals:[], principles:[], watchlist:[] };
-
-// ── 뱃지 ──
-function setBadge(state, msg) {
-  const b = document.getElementById('sync-badge');
-  const msgs = { connected:'● 저장됨', saving:'● 저장 중...', error:'● 오프라인' };
-  b.textContent = msg || msgs[state] || '● ' + state;
-  b.className = 'sync-badge' + (state==='saving'?' syncing':state==='error'?' error':'');
+function setBadge(state,msg){
+  const b=document.getElementById('sync-badge');
+  const msgs={connected:'● 저장됨',saving:'● 저장 중...',error:'● 오프라인'};
+  b.textContent=msg||msgs[state]||'● '+state;
+  b.className='sync-badge'+(state==='saving'?' syncing':state==='error'?' error':'');
 }
+async function fsSet(col,id,data){try{await db.collection(col).doc(id).set(data);return true;}catch(e){console.error(e);return false;}}
+async function fsGetAll(col){try{const s=await db.collection(col).get();return s.docs.map(d=>({id:d.id,...d.data()}));}catch(e){return[];}}
+async function fsDel(col,id){try{await db.collection(col).doc(id).delete();return true;}catch(e){return false;}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 
-// ── Firestore CRUD ──
-async function fsSet(col, id, data) {
-  try { await db.collection(col).doc(id).set(data); return true; }
-  catch(e) { console.error('fsSet error:', e); return false; }
-}
-async function fsGetAll(col) {
-  try {
-    const snap = await db.collection(col).get();
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch(e) { console.error('fsGetAll error:', e); return []; }
-}
-async function fsDel(col, id) {
-  try { await db.collection(col).doc(id).delete(); return true; }
-  catch(e) { console.error('fsDel error:', e); return false; }
-}
-
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-
-// ── 초기 데이터 ──
-const INIT_DATA = {
+const INIT_DATA={
   journals:[
-    {id:'j1',date:'2026-04-16',type:'분석',asset:'전체 포트폴리오 점검',category:'기타',price:'',qty:'',profit:'',
+    {id:'j1',createdAt:1000,date:'2026-04-16',type:'분석',asset:'전체 포트폴리오 점검',category:'기타',price:'',qty:'',profit:'',
      reason:'[거시 관점]\n- 원래 계획: 금리인하 → 유동성폭발 → 크립토/양자 상승\n- 변수: 미-이란 전쟁 → 금리인하 지연\n- 대응: 실적장세 + 저PER 금융주 헷지\n\n[장기 테마]\n- 크립토 미래 먹거리 → 블록체인 활성화\n- AI에이전트 + 피지컬AI = 블록체인 필수 인프라\n- 테슬라: 피지컬AI 대표주\n- 비트마인: 이더리움 트레져리 + 마반 스테이킹 (75%)',
      scenario:'상승: 금리인하 + 크립토 불장 → 비트마인 10배 → 3억 달성\n하락: 금리인하 지연 + 경기침체\n매도트리거: 이더리움 기관 태도 변화, 마반 포기, 17달러 이탈',
      review:'오늘부터 나만의 투자 기록 시작.\n목표: 두 아이 초등학교 입학 때 와이프 일 안해도 되는 구조.\n핵심 깨달음: 충분히 공부한 자산 하락 = 기회 / 모르는 자산 하락 = 패닉'},
-    {id:'j2',date:'2026-04-16',type:'분석',asset:'삼천당제약 상황 점검',category:'국내주식',price:'',qty:'',profit:'',
+    {id:'j2',createdAt:2000,date:'2026-04-16',type:'분석',asset:'삼천당제약 상황 점검',category:'국내주식',price:'',qty:'',profit:'',
      reason:'[매수 이유]\n- 간호사 출신으로 경구용 인슐린(S패스) 혁신성 직접 이해\n- 미국 빅파마와 1:9 제품 수출 계약\n- 유럽 계약 호재\n\n[현재 상황]\n- -35% 급락\n- 루머와 시장 심리로 인한 하락',
      scenario:'4월 말 이벤트 대기\n매수강화: 계약업체 공개, 해외성과 확인\n매도: 내용 불명확, 성과 없음',
      review:'유튜버 정보만 보고 매수한 것이 실수.\n다음부터는 직접 공시 확인하고 5분 설명 테스트 통과한 종목만 매수.'}
   ],
   studies:[
-    {id:'s1',cat:'종목 & 섹터 분석',title:'비트마인 이머션 사업 구조',
-     body:'[이더리움 생태계]\n이더리움 = 도화지 / 이더(ETH) = 잉크\n→ 사용량 증가 = ETH 가격 상승 (소각 구조)\n\n[비트마인 수익 구조]\n1. ETH 대량 매집 (공급량 5% 목표)\n2. 마반(MAVAN) 스테이킹 시스템\n3. 문샷 등 생태계 투자\n4. mNAV 1 이하 구간 자사주 매입\n\n[AI에이전트 시대]\nAI에이전트 → 24시간 자율거래 → 이더리움 수요 폭발',
+    {id:'s1',createdAt:1000,cat:'종목 & 섹터 분석',title:'비트마인 이머션 사업 구조',
+     body:'[이더리움 생태계]\n이더리움 = 도화지 / 이더(ETH) = 잉크\n→ 사용량 증가 = ETH 가격 상승 (소각 구조)\n\n[비트마인 수익 구조]\n1. ETH 대량 매집 (공급량 5% 목표)\n2. 마반(MAVAN) 스테이킹 시스템\n3. 문샷 등 생태계 투자\n4. mNAV 1 이하 구간 자사주 매입\n\n[AI에이전트 시대]\nAI에이전트 → 24시간 자율거래 → 이더리움 수요 폭발\n\n[매도 트리거]\n- 이더리움 기관 태도 변화\n- 마반 수익 모델 포기\n- 17달러 이탈 시 재검토',
      keys:'비트마인,이더리움,AI에이전트,스테이킹,마반,mNAV',date:'2026.04.16'},
-    {id:'s2',cat:'심리 & 리스크관리',title:'나의 투자 심리 패턴',
+    {id:'s2',createdAt:2000,cat:'심리 & 리스크관리',title:'나의 투자 심리 패턴',
      body:'공부한 자산 하락 → 기회\n모르는 자산 하락 → 패닉\n→ 앞으로 이해 못한 자산은 절대 매수 금지',
      keys:'투자심리,패닉셀,공부,확신',date:'2026.04.16'},
-    {id:'s3',cat:'매크로 & 경제지표',title:'시장 상황 정리 (2026.04.16)',
+    {id:'s3',createdAt:3000,cat:'매크로 & 경제지표',title:'시장 상황 정리 (2026.04.16)',
      body:'[금리 & 지정학]\n- 연내 금리인하 확률 거의 소멸\n- 미-이란 전쟁 → 유가 상승 → 인플레 재점화\n- 이란 2주 휴전 → 숏 커버링 기반 반등\n- 10-2 스프레드 +54bp 베어 스티프너',
      keys:'금리,이란전쟁,베어스티프너',date:'2026.04.16'},
-    {id:'s4',cat:'데일리 리포트 정리',title:'2026.04.16 - TSMC 실적 + 미국 고용',
-     body:'[TSMC 1분기 깜짝 실적]\n- 매출 +58.3%, 영업이익 +61.9%\n- 2나노 공정 양산 개시\n- HPC(AI칩) 매출 61%\n→ 엔비디아 AI칩 수요 확인 ✅\n\n[미국 신규 실업수당 207,000건]\n- 예상치 213,000건 하회 = 고용 강함\n→ 금리인하 추가 지연 가능\n→ 금융주 단기 유리 / 크립토 단기 부담',
-     keys:'TSMC,실적,고용,금리인하지연',date:'2026.04.16'}
+    {id:'s4',createdAt:4000,cat:'데일리 리포트 정리',title:'2026.04.16 - TSMC 실적 + 미국 고용',
+     body:'[TSMC 1분기 깜짝 실적]\n- 매출 +58.3%, 영업이익 +61.9%\n- 2나노 공정 양산 개시\n- HPC(AI칩) 매출 61%\n→ 엔비디아 AI칩 수요 확인 ✅\n\n[미국 신규 실업수당 207,000건]\n- 예상치 213,000건 하회 = 고용 강함\n→ 금리인하 추가 지연 가능',
+     keys:'TSMC,실적,고용,금리인하지연',date:'2026.04.16'},
+    {id:'s5',createdAt:5000,cat:'종목 & 섹터 분석',title:'투자은행 수익구조 (GS/MS/JPM)',
+     body:'[투자은행 4가지 수익원]\n1. IPO 주관: 기업 상장 도와주고 조달금액의 2~7% 수수료\n2. M&A 자문: 기업 인수합병 중간 자문\n3. 트레이딩: 자체 자금으로 직접 투자, 변동성 클수록 기회\n4. 자산관리(WM): 부자 돈 운용해주고 수수료\n\n[NII란?]\nNII = 대출이자 수익 - 예금이자 비용\n→ 금리 높을수록 NII 증가\n\n[현재 상황]\n- JP모건 NII 가이던스 하향 = 이자이익 피크 신호 ⚠️\n- 변동성 장 = 트레이딩 수익 기회\n- 4월까지 분할매수 후 재판단',
+     keys:'투자은행,NII,IPO,MA,트레이딩,금리',date:'2026.04.16'}
   ],
   portfolios:[
     {id:'p1',name:'엔비디아',cat:'미국주식',buy:1529000,now:1980000},
@@ -421,49 +419,63 @@ const INIT_DATA = {
     {id:'pr4',text:'이해하지 못한 자산은 절대 매수하지 않는다'}
   ],
   watchlist:[
-    {id:'w1',name:'삼천당제약',status:'이벤트 대기',
-     event:'4월 말 계약 공시 예정\n계약 업체 명확히 공개 예정',
-     buy:'계약 업체 공식 공개\n해외 홍보 성과 확인',
-     sell:'4월 말에도 내용 불명확\n루머 사실 확인'},
-    {id:'w2',name:'금융주 (GS/MS/JPM)',status:'이벤트 대기',
-     event:'4월까지 분할매수 계획\n실적 장세 수혜 여부 확인',
-     buy:'실적 서프라이즈 지속',
-     sell:'NII 하락 추세 지속\n실적장세 종료 신호'}
+    {id:'w1',createdAt:1000,name:'비트마인 이머션',status:'보유 중',
+     event:'이더리움 전고점 회복 흐름 모니터링\nmNAV 수치 정기 확인\nAI에이전트 시대 진입 속도 확인',
+     buy:'mNAV 1 이하 구간 (저평가)\nETH 역사적 저점 구간 (현재 해당)\n이더리움 기관 매집 지속',
+     sell:'이더리움 기관 태도 변화\n마반(MAVAN) 수익모델 포기\n17달러 이탈 시 펀더멘털 재검토\nAI에이전트 시대 다른 체인이 이더리움 대체'},
+    {id:'w2',createdAt:2000,name:'테슬라',status:'보유 중',
+     event:'2030년까지 저렴할 때마다 분할매수\n피지컬AI + 로보택시 진행 상황 모니터링\n옵티머스 로봇 양산 일정 확인',
+     buy:'주가 급락 시 (피지컬AI 스토리 유효할 때)\n로보택시 상용화 진전\n옵티머스 양산 소식',
+     sell:'피지컬AI 성장 스토리 구조적 훼손\nAI 자율주행 경쟁에서 완전 도태'},
+    {id:'w3',createdAt:3000,name:'엔비디아',status:'보유 중',
+     event:'AI 칩 수요 모니터링\nTSMC 실적으로 간접 확인\n블랙웰 GPU 수요 현황',
+     buy:'AI 인프라 투자 지속 확인\n주가 조정 시',
+     sell:'AI 칩 수요 구조적 감소\n경쟁사 기술 추월\n미-중 반도체 규제 심화'},
+    {id:'w4',createdAt:4000,name:'골드만삭스/모건스탠리/JP모건',status:'이벤트 대기',
+     event:'4월까지 분할매수 계획\n분기 실적 발표 모니터링\nNII 추이 확인',
+     buy:'실적 서프라이즈 지속\n변동성 장 → 트레이딩 수익 증가',
+     sell:'NII 하락 추세 지속\n실적장세 종료 신호\n수익구조 공부 후 재판단'},
+    {id:'w5',createdAt:5000,name:'스트래티지',status:'매도 검토',
+     event:'비트마인으로 교체 검토 중\n단순 비트코인 트레져리 기업\n비트마인 대비 수익구조 열위',
+     buy:'없음 (교체 방향으로 검토 중)',
+     sell:'비트마인 추가 매수 여력 생길 때\n수익구조 없는 단순 트레져리 한계 확인 시'},
+    {id:'w6',createdAt:6000,name:'삼천당제약',status:'이벤트 대기',
+     event:'4월 말 계약 업체 공식 공개 예정\n해외 직접 제품 홍보 시작\nS패스 경구용 인슐린 기술 검증',
+     buy:'계약 업체 공식 공개 확인\n해외 홍보 성과 확인\n추가 계약 호재 공시',
+     sell:'4월 말 공시에도 내용 불명확\n해외 홍보 성과 없음\n루머 사실로 확인'}
   ]
 };
 
-const EXIT_RULES = [
-  {asset:'비트마인 이머션',rules:['이더리움 기관 태도 변화 시','마반(MAVAN) 수익 모델 포기 시','17달러 이탈 시 펀더멘털 재검토']},
-  {asset:'테슬라',rules:['피지컬AI 성장 스토리 훼손 시','2030년까지 저렴할 때마다 분할매수']},
+const EXIT_RULES=[
+  {asset:'비트마인 이머션',rules:['이더리움 기관 태도 변화 시','마반(MAVAN) 수익 모델 포기 시','17달러 이탈 시 펀더멘털 재검토','AI에이전트 시대에 다른 체인이 이더리움 대체']},
+  {asset:'테슬라',rules:['피지컬AI 성장 스토리 훼손 시','2030년까지 저렴할 때마다 분할매수 유지']},
   {asset:'삼천당제약',rules:['4월 말 공시 후 내용 불명확 시','루머 사실 확인 시']},
-  {asset:'금융주',rules:['NII 하락 추세 지속 시','실적장세 종료 신호 시']}
+  {asset:'금융주',rules:['NII 하락 추세 지속 시','실적장세 종료 신호 시','수익구조 공부 후 재판단']}
 ];
 
-const CATS = [
+const CATS=[
   {title:'매크로 & 경제지표',icon:'📈'},{title:'기술적 분석',icon:'📊'},
   {title:'종목 & 섹터 분석',icon:'🔍'},{title:'심리 & 리스크관리',icon:'🧠'},
   {title:'암호화폐',icon:'₿'},{title:'ETF & 채권',icon:'🏦'},
   {title:'데일리 리포트 정리',icon:'📰'},{title:'애널리스트 의견',icon:'🏛'}
 ];
-const PALETTE = {'미국주식':'#6c63ff','국내주식':'#43e97b','ETF':'#f7971e','암호화폐':'#f7931a','현금':'#9999bb','부동산':'#ff6584'};
-const CHKLIST = ['오늘의 주요 경제지표 확인','매크로 흐름 점검 (DXY, 금리)','비트마인 mNAV & ETH 가격 확인','자산제곱 데일리 리포트 읽기','오늘 배운 것 공부노트 기록','미과장 런치브리핑 정리','삼천당 공시 확인 (4월 말까지)'];
+const PALETTE={'미국주식':'#6c63ff','국내주식':'#43e97b','ETF':'#f7971e','암호화폐':'#f7931a','현금':'#9999bb','부동산':'#ff6584'};
+const CHKLIST=['오늘의 주요 경제지표 확인','매크로 흐름 점검 (DXY, 금리)','비트마인 mNAV & ETH 가격 확인','자산제곱 데일리 리포트 읽기','오늘 배운 것 공부노트 기록','미과장 런치브리핑 정리','삼천당 공시 확인 (4월 말까지)'];
+const STATUS_CLASS={'보유 중':'s-hold','이벤트 대기':'s-wait','매수 검토':'s-buy','매도 검토':'s-sell'};
 
-// ── 초기화 ──
-async function init() {
-  setBadge('saving', '● 불러오는 중...');
-  const cols = ['journals','studies','portfolios','goals','principles','watchlist'];
-  let hasData = false;
-  for (const col of cols) {
-    const data = await fsGetAll(col);
-    if (data.length > 0) { DB[col] = data; hasData = true; }
+async function init(){
+  setBadge('saving','● 불러오는 중...');
+  const cols=['journals','studies','portfolios','goals','principles','watchlist'];
+  let hasData=false;
+  for(const col of cols){
+    const data=await fsGetAll(col);
+    if(data.length>0){DB[col]=data;hasData=true;}
   }
-  if (!hasData) {
-    setBadge('saving', '● 초기 데이터 저장 중...');
-    for (const col of cols) {
-      for (const item of INIT_DATA[col]) {
-        await fsSet(col, item.id, item);
-      }
-      DB[col] = [...INIT_DATA[col]];
+  if(!hasData){
+    setBadge('saving','● 초기 데이터 저장 중...');
+    for(const col of cols){
+      for(const item of INIT_DATA[col]) await fsSet(col,item.id,item);
+      DB[col]=[...INIT_DATA[col]];
     }
   }
   setBadge('connected');
@@ -471,95 +483,159 @@ async function init() {
   renderDash();
 }
 
-// ── 이벤트 설정 (onclick 대신 addEventListener) ──
-function setupEvents() {
-  // 네비게이션
-  document.getElementById('nav-dash').addEventListener('click', () => go('dash'));
-  document.getElementById('nav-journal').addEventListener('click', () => go('journal'));
-  document.getElementById('nav-study').addEventListener('click', () => go('study'));
-  document.getElementById('nav-port').addEventListener('click', () => go('port'));
-  document.getElementById('nav-watch').addEventListener('click', () => go('watch'));
-  document.getElementById('nav-goal').addEventListener('click', () => go('goal'));
-
-  // 대시보드
-  document.getElementById('btn-more-j').addEventListener('click', () => go('journal'));
-  document.getElementById('btn-more-s').addEventListener('click', () => go('study'));
-
+function setupEvents(){
+  // 네비
+  ['dash','journal','study','port','watch','goal'].forEach(id=>{
+    document.getElementById('nav-'+id).addEventListener('click',()=>go(id));
+  });
+  document.getElementById('btn-more-j').addEventListener('click',()=>go('journal'));
+  document.getElementById('btn-more-s').addEventListener('click',()=>go('study'));
   // 일지
-  document.getElementById('btn-new-j').addEventListener('click', () => openM('jm'));
-  document.getElementById('fj-all').addEventListener('click', () => filterJ('all'));
-  document.getElementById('fj-매수').addEventListener('click', () => filterJ('매수'));
-  document.getElementById('fj-매도').addEventListener('click', () => filterJ('매도'));
-  document.getElementById('fj-분석').addEventListener('click', () => filterJ('분석'));
-  document.getElementById('close-jm').addEventListener('click', () => closeM('jm'));
-  document.getElementById('cancel-jm').addEventListener('click', () => closeM('jm'));
-  document.getElementById('save-jm').addEventListener('click', saveJ);
-
+  document.getElementById('btn-new-j').addEventListener('click',()=>openM('jm'));
+  document.getElementById('fj-all').addEventListener('click',()=>filterJ('all'));
+  document.getElementById('fj-매수').addEventListener('click',()=>filterJ('매수'));
+  document.getElementById('fj-매도').addEventListener('click',()=>filterJ('매도'));
+  document.getElementById('fj-분석').addEventListener('click',()=>filterJ('분석'));
+  document.getElementById('close-jm').addEventListener('click',()=>closeM('jm'));
+  document.getElementById('cancel-jm').addEventListener('click',()=>closeM('jm'));
+  document.getElementById('save-jm').addEventListener('click',saveJ);
   // 공부노트
-  document.getElementById('btn-new-s').addEventListener('click', () => openM('sm'));
-  document.getElementById('btn-back-cats').addEventListener('click', renderStudy);
-  document.getElementById('close-sm').addEventListener('click', () => closeM('sm'));
-  document.getElementById('cancel-sm').addEventListener('click', () => closeM('sm'));
-  document.getElementById('save-sm').addEventListener('click', saveS);
-
+  document.getElementById('btn-new-s').addEventListener('click',()=>openM('sm'));
+  document.getElementById('btn-back-cats').addEventListener('click',renderStudy);
+  document.getElementById('close-sm').addEventListener('click',()=>closeM('sm'));
+  document.getElementById('cancel-sm').addEventListener('click',()=>closeM('sm'));
+  document.getElementById('save-sm').addEventListener('click',saveS);
   // 포트폴리오
-  document.getElementById('btn-new-p').addEventListener('click', () => openM('pm'));
-  document.getElementById('close-pm').addEventListener('click', () => closeM('pm'));
-  document.getElementById('cancel-pm').addEventListener('click', () => closeM('pm'));
-  document.getElementById('save-pm').addEventListener('click', saveP);
-
+  document.getElementById('btn-new-p').addEventListener('click',()=>openM('pm'));
+  document.getElementById('close-pm').addEventListener('click',()=>closeM('pm'));
+  document.getElementById('cancel-pm').addEventListener('click',()=>closeM('pm'));
+  document.getElementById('save-pm').addEventListener('click',saveP);
   // 관찰종목
-  document.getElementById('btn-new-w').addEventListener('click', () => openM('wm'));
-  document.getElementById('close-wm').addEventListener('click', () => closeM('wm'));
-  document.getElementById('cancel-wm').addEventListener('click', () => closeM('wm'));
-  document.getElementById('save-wm').addEventListener('click', saveW);
-
+  document.getElementById('btn-new-w').addEventListener('click',()=>openM('wm'));
+  document.getElementById('close-wm').addEventListener('click',()=>closeM('wm'));
+  document.getElementById('cancel-wm').addEventListener('click',()=>closeM('wm'));
+  document.getElementById('save-wm').addEventListener('click',saveW);
   // 목표
-  document.getElementById('btn-edit-g').addEventListener('click', () => openM('gm'));
-  document.getElementById('close-gm').addEventListener('click', () => closeM('gm'));
-  document.getElementById('cancel-gm').addEventListener('click', () => closeM('gm'));
-  document.getElementById('save-gm').addEventListener('click', saveG);
-
+  document.getElementById('btn-edit-g').addEventListener('click',()=>openM('gm'));
+  document.getElementById('close-gm').addEventListener('click',()=>closeM('gm'));
+  document.getElementById('cancel-gm').addEventListener('click',()=>closeM('gm'));
+  document.getElementById('save-gm').addEventListener('click',saveG);
   // 원칙
-  document.getElementById('btn-new-pr').addEventListener('click', () => openM('prm'));
-  document.getElementById('close-prm').addEventListener('click', () => closeM('prm'));
-  document.getElementById('cancel-prm').addEventListener('click', () => closeM('prm'));
-  document.getElementById('save-prm').addEventListener('click', savePR);
+  document.getElementById('btn-new-pr').addEventListener('click',()=>openM('prm'));
+  document.getElementById('close-prm').addEventListener('click',()=>closeM('prm'));
+  document.getElementById('cancel-prm').addEventListener('click',()=>closeM('prm'));
+  document.getElementById('save-prm').addEventListener('click',savePR);
+  // 동적 버튼 (이벤트 위임)
+  document.addEventListener('click',handleDynamic);
 }
 
-// ── 네비게이션 ──
-function go(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+async function handleDynamic(e){
+  const btn=e.target.closest('[data-action]');
+  if(!btn)return;
+  const {action,id}=btn.dataset;
+  if(action==='delJ'){if(!confirm('삭제?'))return;setBadge('saving');await fsDel('journals',id);DB.journals=DB.journals.filter(j=>j.id!==id);setBadge('connected');renderJ('all');}
+  if(action==='editJ'){const item=DB.journals.find(j=>j.id===id);if(item)editJ(item);}
+  if(action==='delS'){if(!confirm('삭제?'))return;setBadge('saving');await fsDel('studies',id);DB.studies=DB.studies.filter(s=>s.id!==id);setBadge('connected');renderStudy();}
+  if(action==='editS'){const item=DB.studies.find(s=>s.id===id);if(item)editS(item);}
+  if(action==='delP'){if(!confirm('삭제?'))return;setBadge('saving');await fsDel('portfolios',id);DB.portfolios=DB.portfolios.filter(p=>p.id!==id);setBadge('connected');renderPort();}
+  if(action==='editP'){const item=DB.portfolios.find(p=>p.id===id);if(item)editP(item);}
+  if(action==='delW'){if(!confirm('삭제?'))return;setBadge('saving');await fsDel('watchlist',id);DB.watchlist=DB.watchlist.filter(w=>w.id!==id);setBadge('connected');renderWatch();}
+  if(action==='editW'){const item=DB.watchlist.find(w=>w.id===id);if(item)editW(item);}
+  if(action==='delPR'){if(!confirm('삭제?'))return;setBadge('saving');await fsDel('principles',id);DB.principles=DB.principles.filter(p=>p.id!==id);setBadge('connected');renderGoal();}
+  if(action==='editPR'){const item=DB.principles.find(p=>p.id===id);if(item)editPR(item);}
+}
+
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   document.getElementById('nav-'+id).classList.add('active');
-  if(id==='dash') renderDash();
-  if(id==='journal') renderJ('all');
-  if(id==='study') renderStudy();
-  if(id==='port') renderPort();
-  if(id==='watch') renderWatch();
-  if(id==='goal') renderGoal();
+  if(id==='dash')renderDash();
+  if(id==='journal')renderJ('all');
+  if(id==='study')renderStudy();
+  if(id==='port')renderPort();
+  if(id==='watch')renderWatch();
+  if(id==='goal')renderGoal();
 }
 
-function openM(id) {
-  if(id==='jm') document.getElementById('jd').value = new Date().toISOString().split('T')[0];
+function openM(id,isEdit=false){
+  if(id==='jm'){
+    document.getElementById('jm-title').textContent=isEdit?'투자 일지 수정':'투자 일지 작성';
+    if(!isEdit){document.getElementById('jd').value=new Date().toISOString().split('T')[0];document.getElementById('j-edit-id').value='';}
+  }
+  if(id==='sm'){document.getElementById('sm-title').textContent=isEdit?'공부 노트 수정':'공부 노트 추가';if(!isEdit)document.getElementById('s-edit-id').value='';}
+  if(id==='pm'){document.getElementById('pm-title').textContent=isEdit?'자산 수정':'자산 추가';if(!isEdit)document.getElementById('p-edit-id').value='';}
+  if(id==='wm'){document.getElementById('wm-title').textContent=isEdit?'관찰 종목 수정':'관찰 종목 추가';if(!isEdit)document.getElementById('w-edit-id').value='';}
+  if(id==='prm'){document.getElementById('prm-title').textContent=isEdit?'투자 원칙 수정':'투자 원칙 추가';if(!isEdit)document.getElementById('pr-edit-id').value='';}
   document.getElementById(id).classList.add('open');
 }
-function closeM(id) { document.getElementById(id).classList.remove('open'); }
+function closeM(id){
+  document.getElementById(id).classList.remove('open');
+  // 폼 초기화
+  const fields={jm:['ja','jp','jq','jpr','jr','js','jrv'],sm:['st','sb','sk'],pm:['pn','pb','pw'],wm:['wn','we','wb','wsl'],prm:['prt']};
+  if(fields[id]) fields[id].forEach(f=>{const e=document.getElementById(f);if(e)e.value='';});
+}
+
+// ── 수정 함수들 ──
+function editJ(item){
+  document.getElementById('j-edit-id').value=item.id;
+  document.getElementById('jd').value=item.date||'';
+  document.getElementById('jt').value=item.type||'분석';
+  document.getElementById('ja').value=item.asset||'';
+  document.getElementById('jc').value=item.category||'미국주식';
+  document.getElementById('jp').value=item.price||'';
+  document.getElementById('jq').value=item.qty||'';
+  document.getElementById('jpr').value=item.profit||'';
+  document.getElementById('jr').value=item.reason||'';
+  document.getElementById('js').value=item.scenario||'';
+  document.getElementById('jrv').value=item.review||'';
+  openM('jm',true);
+}
+function editS(item){
+  document.getElementById('s-edit-id').value=item.id;
+  document.getElementById('sc').value=item.cat||'매크로 & 경제지표';
+  document.getElementById('st').value=item.title||'';
+  document.getElementById('sb').value=item.body||'';
+  document.getElementById('sk').value=item.keys||'';
+  openM('sm',true);
+}
+function editP(item){
+  document.getElementById('p-edit-id').value=item.id;
+  document.getElementById('pn').value=item.name||'';
+  document.getElementById('pc').value=item.cat||'미국주식';
+  document.getElementById('pb').value=item.buy||'';
+  document.getElementById('pw').value=item.now||'';
+  openM('pm',true);
+}
+function editW(item){
+  document.getElementById('w-edit-id').value=item.id;
+  document.getElementById('wn').value=item.name||'';
+  document.getElementById('ws').value=item.status||'보유 중';
+  document.getElementById('we').value=item.event||'';
+  document.getElementById('wb').value=item.buy||'';
+  document.getElementById('wsl').value=item.sell||'';
+  openM('wm',true);
+}
+function editPR(item){
+  document.getElementById('pr-edit-id').value=item.id;
+  document.getElementById('prt').value=item.text||'';
+  openM('prm',true);
+}
 
 // ── 렌더링 ──
-function renderDash() {
-  const tB = DB.portfolios.reduce((a,p)=>a+Number(p.buy),0);
-  const tN = DB.portfolios.reduce((a,p)=>a+Number(p.now),0);
-  const pct = tB ? ((tN-tB)/tB*100).toFixed(2) : 0;
-  const cls = pct>0?'up':pct<0?'down':'neutral';
-  document.getElementById('d-stats').innerHTML = `
+function renderDash(){
+  const tB=DB.portfolios.reduce((a,p)=>a+Number(p.buy),0);
+  const tN=DB.portfolios.reduce((a,p)=>a+Number(p.now),0);
+  const pct=tB?((tN-tB)/tB*100).toFixed(2):0;
+  const cls=pct>0?'up':pct<0?'down':'neutral';
+  document.getElementById('d-stats').innerHTML=`
     <div class="stat-card"><div class="stat-label">총 평가금액</div><div class="stat-value neutral">${tN.toLocaleString()}원</div><div class="stat-sub">매수금 ${tB.toLocaleString()}원</div></div>
     <div class="stat-card"><div class="stat-label">총 수익률</div><div class="stat-value ${cls}">${pct>0?'+':''}${pct}%</div><div class="stat-sub">${(tN-tB).toLocaleString()}원</div></div>
     <div class="stat-card"><div class="stat-label">1단계 목표까지</div><div class="stat-value neutral">${Math.max(0,(300000000-tN)/10000).toFixed(0)}만원</div><div class="stat-sub">목표 3억</div></div>
     <div class="stat-card"><div class="stat-label">일지 / 노트</div><div class="stat-value neutral">${DB.journals.length} / ${DB.studies.length}</div><div class="stat-sub">오늘도 기록하자</div></div>
   `;
-  document.getElementById('d-rj').innerHTML = [...DB.journals].reverse().slice(0,2).map(j=>`
+  const sortedJ=[...DB.journals].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,2);
+  document.getElementById('d-rj').innerHTML=sortedJ.map(j=>`
     <div style="padding:8px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px">
         <span class="tag tag-${j.type==='매수'?'buy':j.type==='매도'?'sell':'hold'}">${j.type}</span>
@@ -568,92 +644,95 @@ function renderDash() {
       </div>
       <div style="font-size:11px;color:var(--text2)">${(j.reason||'').split('\n')[0].slice(0,55)}...</div>
     </div>
-  `).join('') || '<div style="color:var(--text3);font-size:12px;padding:10px 0">일지가 없어요</div>';
-  document.getElementById('d-rs').innerHTML = [...DB.studies].reverse().slice(0,2).map(s=>`
+  `).join('')||'<div style="color:var(--text3);font-size:12px;padding:10px 0">일지가 없어요</div>';
+  const sortedS=[...DB.studies].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,2);
+  document.getElementById('d-rs').innerHTML=sortedS.map(s=>`
     <div style="padding:8px 0;border-bottom:1px solid var(--border)">
       <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px">${s.title}</div>
       <div style="font-size:10px;color:var(--text3)">${s.cat} · ${s.date||''}</div>
     </div>
-  `).join('') || '<div style="color:var(--text3);font-size:12px;padding:10px 0">노트가 없어요</div>';
-  document.getElementById('d-chk').innerHTML = CHKLIST.map((c,i)=>`
-    <div class="chk-item">
-      <input type="checkbox" id="ck${i}" style="accent-color:var(--accent);width:15px;height:15px;cursor:pointer">
-      <label for="ck${i}" style="font-size:12px;color:var(--text2);cursor:pointer">${c}</label>
-    </div>
+  `).join('')||'<div style="color:var(--text3);font-size:12px;padding:10px 0">노트가 없어요</div>';
+  document.getElementById('d-chk').innerHTML=CHKLIST.map((c,i)=>`
+    <div class="chk-item"><input type="checkbox" id="ck${i}" style="accent-color:var(--accent);width:15px;height:15px;cursor:pointer"><label for="ck${i}" style="font-size:12px;color:var(--text2);cursor:pointer">${c}</label></div>
   `).join('');
 }
 
-function renderJ(filter) {
-  const data = filter==='all' ? [...DB.journals].reverse() : [...DB.journals].filter(j=>j.type===filter).reverse();
-  document.getElementById('j-list').innerHTML = data.length ? data.map(j=>`
+function renderJ(filter){
+  let data=[...DB.journals].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  if(filter!=='all') data=data.filter(j=>j.type===filter);
+  document.getElementById('j-list').innerHTML=data.length?data.map(j=>`
     <div class="jcard">
       <div class="jcard-header">
         <span class="tag tag-${j.type==='매수'?'buy':j.type==='매도'?'sell':'hold'}">${j.type}</span>
         <span class="jcard-title">${j.asset} <span style="color:var(--text3);font-size:11px">(${j.category})</span></span>
         ${j.profit?`<span style="font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:5px;background:${Number(j.profit)>0?'rgba(67,233,123,.15)':'rgba(255,101,132,.15)'};color:${Number(j.profit)>0?'var(--accent3)':'var(--accent2)'}">${Number(j.profit)>0?'+':''}${j.profit}%</span>`:''}
         <span style="font-size:10px;color:var(--text3);font-family:var(--mono)">${j.date}</span>
-        <button class="btn btn-danger btn-sm" data-id="${j.id}" data-action="delJ">삭제</button>
+        <div class="action-btns">
+          <button class="btn btn-edit btn-sm" data-action="editJ" data-id="${j.id}">수정</button>
+          <button class="btn btn-danger btn-sm" data-action="delJ" data-id="${j.id}">삭제</button>
+        </div>
       </div>
       ${j.reason?`<div class="jsec"><div class="jsec-label">매매 근거</div><div class="jsec-body">${j.reason}</div></div>`:''}
       ${j.scenario?`<div class="jsec"><div class="jsec-label">시나리오</div><div class="jsec-body scenario">${j.scenario}</div></div>`:''}
       ${j.review?`<div class="jsec"><div class="jsec-label">복기</div><div class="jsec-body review">${j.review}</div></div>`:''}
     </div>
-  `).join('') : '<div style="color:var(--text3);font-size:12px;padding:18px;text-align:center">일지가 없어요</div>';
+  `).join(''):'<div style="color:var(--text3);font-size:12px;padding:18px;text-align:center">일지가 없어요</div>';
 }
 
-function filterJ(t) {
-  document.querySelectorAll('[id^="fj-"]').forEach(b => { b.style.borderColor=''; b.style.color=''; });
-  const b = document.getElementById('fj-'+t);
-  if(b) { b.style.borderColor='var(--accent)'; b.style.color='var(--accent)'; }
+function filterJ(t){
+  document.querySelectorAll('[id^="fj-"]').forEach(b=>{b.style.borderColor='';b.style.color='';});
+  const b=document.getElementById('fj-'+t);
+  if(b){b.style.borderColor='var(--accent)';b.style.color='var(--accent)';}
   renderJ(t);
 }
 
-function renderStudy() {
-  document.getElementById('s-detail').style.display = 'none';
-  const el = document.getElementById('s-cats');
-  el.style.display = 'grid';
-  el.innerHTML = CATS.map(c => {
-    const cnt = DB.studies.filter(s=>s.cat===c.title).length;
+function renderStudy(){
+  document.getElementById('s-detail').style.display='none';
+  const el=document.getElementById('s-cats');
+  el.style.display='grid';
+  el.innerHTML=CATS.map(c=>{
+    const cnt=DB.studies.filter(s=>s.cat===c.title).length;
     return `<div class="scat" data-cat="${c.title}" data-icon="${c.icon}">
       <div class="scat-icon">${c.icon}</div>
       <div class="scat-title">${c.title}</div>
       <div class="scat-cnt">${cnt}개의 노트</div>
     </div>`;
   }).join('');
-  document.querySelectorAll('.scat').forEach(el => {
-    el.addEventListener('click', () => openCat(el.dataset.cat, el.dataset.icon));
+  document.querySelectorAll('.scat').forEach(el=>{
+    el.addEventListener('click',()=>openCat(el.dataset.cat,el.dataset.icon));
   });
 }
 
-function openCat(cat, icon) {
-  document.getElementById('s-cats').style.display = 'none';
-  document.getElementById('s-detail').style.display = 'block';
-  document.getElementById('s-dtitle').innerHTML = `<span class="dot dot-green"></span>${icon} ${cat}`;
-  const notes = DB.studies.filter(s=>s.cat===cat).reverse();
-  document.getElementById('s-notes').innerHTML = notes.length ? notes.map(n=>`
+function openCat(cat,icon){
+  document.getElementById('s-cats').style.display='none';
+  document.getElementById('s-detail').style.display='block';
+  document.getElementById('s-dtitle').innerHTML=`<span class="dot dot-green"></span>${icon} ${cat}`;
+  const notes=[...DB.studies].filter(s=>s.cat===cat).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  document.getElementById('s-notes').innerHTML=notes.length?notes.map(n=>`
     <div class="ncard">
       <div class="ncard-header">
         <span class="ncard-title">${n.title}</span>
-        <div style="display:flex;align-items:center;gap:7px">
+        <div class="action-btns">
           <span style="font-size:10px;color:var(--text3)">${n.date||''}</span>
-          <button class="btn btn-danger btn-sm" data-id="${n.id}" data-action="delS">삭제</button>
+          <button class="btn btn-edit btn-sm" data-action="editS" data-id="${n.id}">수정</button>
+          <button class="btn btn-danger btn-sm" data-action="delS" data-id="${n.id}">삭제</button>
         </div>
       </div>
       <div class="ncard-body">${n.body}</div>
       ${n.keys?`<div style="margin-top:7px">${n.keys.split(',').map(k=>`<span class="nkey">${k.trim()}</span>`).join('')}</div>`:''}
     </div>
-  `).join('') : '<div style="color:var(--text3);font-size:12px;padding:18px;text-align:center">노트가 없어요</div>';
+  `).join(''):'<div style="color:var(--text3);font-size:12px;padding:18px;text-align:center">노트가 없어요</div>';
 }
 
-function renderPort() {
-  const total = DB.portfolios.reduce((a,p)=>a+Number(p.now),0);
-  const catT = {};
-  DB.portfolios.forEach(p => { catT[p.cat] = (catT[p.cat]||0) + Number(p.now); });
-  document.getElementById('p-bar').innerHTML = Object.entries(catT).map(([c,v])=>`<div class="bseg" style="width:${total?(v/total*100).toFixed(1):0}%;background:${PALETTE[c]||'#6c63ff'}"></div>`).join('');
-  document.getElementById('p-leg').innerHTML = Object.entries(catT).map(([c,v])=>`<div class="legend-item"><div class="ldot" style="background:${PALETTE[c]||'#6c63ff'}"></div>${c} ${total?(v/total*100).toFixed(1):0}%</div>`).join('');
-  document.getElementById('p-tbl').innerHTML = DB.portfolios.map(p => {
-    const ret = p.buy>0 ? ((p.now-p.buy)/p.buy*100).toFixed(2) : 0;
-    const w = total ? (p.now/total*100).toFixed(1) : 0;
+function renderPort(){
+  const total=DB.portfolios.reduce((a,p)=>a+Number(p.now),0);
+  const catT={};
+  DB.portfolios.forEach(p=>{catT[p.cat]=(catT[p.cat]||0)+Number(p.now);});
+  document.getElementById('p-bar').innerHTML=Object.entries(catT).map(([c,v])=>`<div class="bseg" style="width:${total?(v/total*100).toFixed(1):0}%;background:${PALETTE[c]||'#6c63ff'}"></div>`).join('');
+  document.getElementById('p-leg').innerHTML=Object.entries(catT).map(([c,v])=>`<div class="legend-item"><div class="ldot" style="background:${PALETTE[c]||'#6c63ff'}"></div>${c} ${total?(v/total*100).toFixed(1):0}%</div>`).join('');
+  document.getElementById('p-tbl').innerHTML=DB.portfolios.map(p=>{
+    const ret=p.buy>0?((p.now-p.buy)/p.buy*100).toFixed(2):0;
+    const w=total?(p.now/total*100).toFixed(1):0;
     return `<tr>
       <td><span class="asset-name">${p.name}</span></td>
       <td><span class="tag tag-hold">${p.cat}</span></td>
@@ -661,34 +740,38 @@ function renderPort() {
       <td style="font-family:var(--mono)">${Number(p.now).toLocaleString()}</td>
       <td style="font-family:var(--mono);color:${ret>0?'var(--accent3)':ret<0?'var(--accent2)':'var(--text2)'}">${ret>0?'+':''}${ret}%</td>
       <td style="font-family:var(--mono)">${w}%</td>
-      <td><button class="btn btn-danger btn-sm" data-id="${p.id}" data-action="delP">삭제</button></td>
+      <td><div class="action-btns"><button class="btn btn-edit btn-sm" data-action="editP" data-id="${p.id}">수정</button><button class="btn btn-danger btn-sm" data-action="delP" data-id="${p.id}">삭제</button></div></td>
     </tr>`;
   }).join('');
 }
 
-function renderWatch() {
-  document.getElementById('w-list').innerHTML = DB.watchlist.length ? DB.watchlist.map(w=>`
+function renderWatch(){
+  const sorted=[...DB.watchlist].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  document.getElementById('w-list').innerHTML=sorted.length?sorted.map(w=>`
     <div class="wcard">
       <div class="wcard-header">
         <span style="font-size:14px;font-weight:600;color:var(--text);flex:1">${w.name}</span>
-        <span class="wstatus ${w.status==='이벤트 대기'?'sw':w.status==='매수 검토'?'sb':'ss'}">${w.status}</span>
-        <button class="btn btn-danger btn-sm" data-id="${w.id}" data-action="delW">삭제</button>
+        <span class="wstatus ${STATUS_CLASS[w.status]||'s-wait'}">${w.status}</span>
+        <div class="action-btns">
+          <button class="btn btn-edit btn-sm" data-action="editW" data-id="${w.id}">수정</button>
+          <button class="btn btn-danger btn-sm" data-action="delW" data-id="${w.id}">삭제</button>
+        </div>
       </div>
-      ${w.event?`<div style="margin-bottom:9px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">이벤트</div><div style="font-size:12px;color:var(--text2);white-space:pre-wrap;background:var(--bg4);padding:8px;border-radius:7px">${w.event}</div></div>`:''}
+      ${w.event?`<div style="margin-bottom:9px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px">이벤트 / 모니터링</div><div style="font-size:12px;color:var(--text2);white-space:pre-wrap;background:var(--bg4);padding:8px;border-radius:7px">${w.event}</div></div>`:''}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         ${w.buy?`<div><div style="font-size:10px;color:var(--accent3);margin-bottom:3px">매수 조건</div><div style="font-size:11px;color:var(--text2);white-space:pre-wrap;background:rgba(67,233,123,.08);padding:7px;border-radius:7px">${w.buy}</div></div>`:''}
         ${w.sell?`<div><div style="font-size:10px;color:var(--accent2);margin-bottom:3px">매도 조건</div><div style="font-size:11px;color:var(--text2);white-space:pre-wrap;background:rgba(255,101,132,.08);padding:7px;border-radius:7px">${w.sell}</div></div>`:''}
       </div>
     </div>
-  `).join('') : '<div style="color:var(--text3);font-size:12px;padding:18px;text-align:center">관찰 종목이 없어요</div>';
+  `).join(''):'<div style="color:var(--text3);font-size:12px;padding:18px;text-align:center">관찰 종목이 없어요</div>';
 }
 
-function renderGoal() {
-  const types = ['1단계 목표','2단계 목표','최종 목표'];
-  document.getElementById('g-cards').innerHTML = types.map(t => {
-    const g = DB.goals.find(x=>x.type===t);
-    if(!g) return `<div class="gcard"><div class="gtitle">${t}</div><div style="color:var(--text3);font-size:12px;margin-top:7px">미설정</div></div>`;
-    const pct = g.amount>0 ? Math.min((g.current/g.amount*100),100).toFixed(1) : 0;
+function renderGoal(){
+  const types=['1단계 목표','2단계 목표','최종 목표'];
+  document.getElementById('g-cards').innerHTML=types.map(t=>{
+    const g=DB.goals.find(x=>x.type===t);
+    if(!g)return `<div class="gcard"><div class="gtitle">${t}</div><div style="color:var(--text3);font-size:12px;margin-top:7px">미설정</div></div>`;
+    const pct=g.amount>0?Math.min((g.current/g.amount*100),100).toFixed(1):0;
     return `<div class="gcard">
       <div class="gtitle">${t}</div>
       <div class="gamount">${Number(g.amount).toLocaleString()}원</div>
@@ -699,14 +782,17 @@ function renderGoal() {
       </div>
     </div>`;
   }).join('');
-  document.getElementById('pr-list').innerHTML = DB.principles.length ? DB.principles.map((p,i)=>`
+  document.getElementById('pr-list').innerHTML=DB.principles.length?DB.principles.map((p,i)=>`
     <div class="prcard">
       <div class="prnum">${i+1}</div>
       <div class="prtext">${p.text}</div>
-      <button class="btn btn-danger btn-sm" data-id="${p.id}" data-action="delPR">삭제</button>
+      <div class="action-btns">
+        <button class="btn btn-edit btn-sm" data-action="editPR" data-id="${p.id}">수정</button>
+        <button class="btn btn-danger btn-sm" data-action="delPR" data-id="${p.id}">삭제</button>
+      </div>
     </div>
-  `).join('') : '<div style="color:var(--text3);font-size:12px;padding:18px;text-align:center">원칙을 추가해보세요</div>';
-  document.getElementById('ex-list').innerHTML = EXIT_RULES.map(r=>`
+  `).join(''):'<div style="color:var(--text3);font-size:12px;padding:18px;text-align:center">원칙을 추가해보세요</div>';
+  document.getElementById('ex-list').innerHTML=EXIT_RULES.map(r=>`
     <div style="margin-bottom:14px">
       <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:7px">${r.asset}</div>
       ${r.rules.map(rule=>`<div style="display:flex;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)"><span style="color:var(--accent2)">→</span>${rule}</div>`).join('')}
@@ -714,99 +800,107 @@ function renderGoal() {
   `).join('');
 }
 
-// ── 이벤트 위임 (동적 삭제 버튼) ──
-document.addEventListener('click', async function(e) {
-  const btn = e.target.closest('[data-action]');
-  if(!btn) return;
-  const action = btn.dataset.action;
-  const id = btn.dataset.id;
-  if(!confirm('삭제할까요?')) return;
-  setBadge('saving');
-  if(action==='delJ') { await fsDel('journals',id); DB.journals=DB.journals.filter(j=>j.id!==id); setBadge('connected'); renderJ('all'); }
-  if(action==='delS') { await fsDel('studies',id); DB.studies=DB.studies.filter(s=>s.id!==id); setBadge('connected'); renderStudy(); }
-  if(action==='delP') { await fsDel('portfolios',id); DB.portfolios=DB.portfolios.filter(p=>p.id!==id); setBadge('connected'); renderPort(); }
-  if(action==='delW') { await fsDel('watchlist',id); DB.watchlist=DB.watchlist.filter(w=>w.id!==id); setBadge('connected'); renderWatch(); }
-  if(action==='delPR') { await fsDel('principles',id); DB.principles=DB.principles.filter(p=>p.id!==id); setBadge('connected'); renderGoal(); }
-});
-
-// ── CRUD 저장 함수 ──
-async function saveJ() {
-  const d = {
-    id:uid(), date:document.getElementById('jd').value, type:document.getElementById('jt').value,
-    asset:document.getElementById('ja').value, category:document.getElementById('jc').value,
-    price:document.getElementById('jp').value, qty:document.getElementById('jq').value,
-    profit:document.getElementById('jpr').value, reason:document.getElementById('jr').value,
-    scenario:document.getElementById('js').value, review:document.getElementById('jrv').value
+// ── CRUD 저장 ──
+async function saveJ(){
+  const editId=document.getElementById('j-edit-id').value;
+  const d={
+    id:editId||uid(),
+    createdAt:editId?(DB.journals.find(j=>j.id===editId)?.createdAt||Date.now()):Date.now(),
+    date:document.getElementById('jd').value,type:document.getElementById('jt').value,
+    asset:document.getElementById('ja').value,category:document.getElementById('jc').value,
+    price:document.getElementById('jp').value,qty:document.getElementById('jq').value,
+    profit:document.getElementById('jpr').value,reason:document.getElementById('jr').value,
+    scenario:document.getElementById('js').value,review:document.getElementById('jrv').value
   };
-  if(!d.asset) { alert('종목명을 입력해주세요'); return; }
+  if(!d.asset){alert('종목명을 입력해주세요');return;}
   setBadge('saving');
-  const ok = await fsSet('journals', d.id, d);
-  if(ok) { DB.journals.push(d); setBadge('connected'); closeM('jm'); renderJ('all'); }
-  else { setBadge('error'); alert('저장 실패. Firebase 규칙을 확인해주세요.'); }
-  ['jd','ja','jp','jq','jpr','jr','js','jrv'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  const ok=await fsSet('journals',d.id,d);
+  if(ok){
+    if(editId) DB.journals=DB.journals.map(j=>j.id===editId?d:j);
+    else DB.journals.push(d);
+    setBadge('connected');closeM('jm');renderJ('all');
+  } else {setBadge('error');alert('저장 실패. Firebase 규칙을 확인해주세요.');}
 }
 
-async function saveS() {
-  const d = {
-    id:uid(), cat:document.getElementById('sc').value, title:document.getElementById('st').value,
-    body:document.getElementById('sb').value, keys:document.getElementById('sk').value,
+async function saveS(){
+  const editId=document.getElementById('s-edit-id').value;
+  const d={
+    id:editId||uid(),
+    createdAt:editId?(DB.studies.find(s=>s.id===editId)?.createdAt||Date.now()):Date.now(),
+    cat:document.getElementById('sc').value,title:document.getElementById('st').value,
+    body:document.getElementById('sb').value,keys:document.getElementById('sk').value,
     date:new Date().toLocaleDateString('ko-KR')
   };
-  if(!d.title||!d.body) { alert('제목과 내용을 입력해주세요'); return; }
+  if(!d.title||!d.body){alert('제목과 내용을 입력해주세요');return;}
   setBadge('saving');
-  const ok = await fsSet('studies', d.id, d);
-  if(ok) {
-    DB.studies.push(d); setBadge('connected'); closeM('sm');
-    const cat=d.cat; const icon=CATS.find(c=>c.title===cat)?.icon||'📝';
-    renderStudy(); setTimeout(()=>openCat(cat,icon),100);
-  } else { setBadge('error'); alert('저장 실패. Firebase 규칙을 확인해주세요.'); }
-  ['st','sb','sk'].forEach(id => document.getElementById(id).value='');
+  const ok=await fsSet('studies',d.id,d);
+  if(ok){
+    if(editId) DB.studies=DB.studies.map(s=>s.id===editId?d:s);
+    else DB.studies.push(d);
+    setBadge('connected');closeM('sm');
+    const cat=d.cat;const icon=CATS.find(c=>c.title===cat)?.icon||'📝';
+    renderStudy();setTimeout(()=>openCat(cat,icon),100);
+  } else {setBadge('error');alert('저장 실패.');}
 }
 
-async function saveP() {
-  const d = { id:uid(), name:document.getElementById('pn').value, cat:document.getElementById('pc').value, buy:document.getElementById('pb').value, now:document.getElementById('pw').value };
-  if(!d.name) { alert('자산명을 입력해주세요'); return; }
+async function saveP(){
+  const editId=document.getElementById('p-edit-id').value;
+  const d={id:editId||uid(),name:document.getElementById('pn').value,cat:document.getElementById('pc').value,buy:document.getElementById('pb').value,now:document.getElementById('pw').value};
+  if(!d.name){alert('자산명을 입력해주세요');return;}
   setBadge('saving');
-  const ok = await fsSet('portfolios', d.id, d);
-  if(ok) { DB.portfolios.push(d); setBadge('connected'); closeM('pm'); renderPort(); }
-  else { setBadge('error'); alert('저장 실패. Firebase 규칙을 확인해주세요.'); }
-  ['pn','pb','pw'].forEach(id => document.getElementById(id).value='');
+  const ok=await fsSet('portfolios',d.id,d);
+  if(ok){
+    if(editId) DB.portfolios=DB.portfolios.map(p=>p.id===editId?d:p);
+    else DB.portfolios.push(d);
+    setBadge('connected');closeM('pm');renderPort();
+  } else {setBadge('error');alert('저장 실패.');}
 }
 
-async function saveW() {
-  const d = { id:uid(), name:document.getElementById('wn').value, status:document.getElementById('ws').value, event:document.getElementById('we').value, buy:document.getElementById('wb').value, sell:document.getElementById('wsl').value };
-  if(!d.name) { alert('종목명을 입력해주세요'); return; }
+async function saveW(){
+  const editId=document.getElementById('w-edit-id').value;
+  const d={
+    id:editId||uid(),
+    createdAt:editId?(DB.watchlist.find(w=>w.id===editId)?.createdAt||Date.now()):Date.now(),
+    name:document.getElementById('wn').value,status:document.getElementById('ws').value,
+    event:document.getElementById('we').value,buy:document.getElementById('wb').value,
+    sell:document.getElementById('wsl').value
+  };
+  if(!d.name){alert('종목명을 입력해주세요');return;}
   setBadge('saving');
-  const ok = await fsSet('watchlist', d.id, d);
-  if(ok) { DB.watchlist.push(d); setBadge('connected'); closeM('wm'); renderWatch(); }
-  else { setBadge('error'); alert('저장 실패. Firebase 규칙을 확인해주세요.'); }
-  ['wn','we','wb','wsl'].forEach(id => document.getElementById(id).value='');
+  const ok=await fsSet('watchlist',d.id,d);
+  if(ok){
+    if(editId) DB.watchlist=DB.watchlist.map(w=>w.id===editId?d:w);
+    else DB.watchlist.push(d);
+    setBadge('connected');closeM('wm');renderWatch();
+  } else {setBadge('error');alert('저장 실패.');}
 }
 
-async function saveG() {
-  const type = document.getElementById('gt').value;
-  const d = { id:uid(), type, amount:document.getElementById('ga').value, current:document.getElementById('gcur').value, desc:document.getElementById('gd').value };
+async function saveG(){
+  const type=document.getElementById('gt').value;
+  const d={id:uid(),type,amount:document.getElementById('ga').value,current:document.getElementById('gcur').value,desc:document.getElementById('gd').value};
   setBadge('saving');
-  const idx = DB.goals.findIndex(g=>g.type===type);
-  if(idx>-1) { await fsDel('goals', DB.goals[idx].id); DB.goals[idx]=d; }
+  const idx=DB.goals.findIndex(g=>g.type===type);
+  if(idx>-1){await fsDel('goals',DB.goals[idx].id);DB.goals[idx]=d;}
   else DB.goals.push(d);
-  const ok = await fsSet('goals', d.id, d);
-  if(ok) { setBadge('connected'); closeM('gm'); renderGoal(); }
+  const ok=await fsSet('goals',d.id,d);
+  if(ok){setBadge('connected');closeM('gm');renderGoal();}
   else setBadge('error');
 }
 
-async function savePR() {
-  const t = document.getElementById('prt').value;
-  if(!t) return;
-  const d = { id:uid(), text:t };
+async function savePR(){
+  const editId=document.getElementById('pr-edit-id').value;
+  const t=document.getElementById('prt').value;
+  if(!t)return;
+  const d={id:editId||uid(),text:t};
   setBadge('saving');
-  const ok = await fsSet('principles', d.id, d);
-  if(ok) { DB.principles.push(d); setBadge('connected'); closeM('prm'); renderGoal(); }
-  else setBadge('error');
-  document.getElementById('prt').value='';
+  const ok=await fsSet('principles',d.id,d);
+  if(ok){
+    if(editId) DB.principles=DB.principles.map(p=>p.id===editId?d:p);
+    else DB.principles.push(d);
+    setBadge('connected');closeM('prm');renderGoal();
+  } else setBadge('error');
 }
 
-// 시작!
 init();
 </script>
 </body>
